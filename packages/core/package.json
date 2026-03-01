@@ -5,10 +5,16 @@
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js"
+    }
+  },
   "scripts": {
-    "build": "tsup src/index.js --format cjs,esm --dts",
-    "postbuild": "cp src/refresh.css dist/ && cp src/refresh.svg dist/ || true",
-    "dev": "tsup src/index.js --format cjs,esm --dts --watch"
+    "build": "tsup src/index.ts --format cjs,esm --dts --inject-style",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch --inject-style"
   },
   "keywords": [],
   "author": "",

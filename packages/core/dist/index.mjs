@@ -1,259 +1,159 @@
-// src/animate.js
-var lasttime = 0;
-var nextFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.msRequestAnimationFrame || function(callback) {
-  let curtime = +/* @__PURE__ */ new Date(), delay = Math.max(1e3 / 60, 1e3 / 60 - (curtime - lasttime));
-  lasttime = curtime + delay;
-  return setTimeout(callback, delay);
-};
-var cancelFrame = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || clearTimeout;
-var tween = {
-  linear: function(t, b, c, d) {
-    return c * t / d + b;
-  },
-  ease: function(t, b, c, d) {
-    return -c * ((t = t / d - 1) * t * t * t - 1) + b;
-  },
-  "ease-in": function(t, b, c, d) {
-    return c * (t /= d) * t * t + b;
-  },
-  "ease-out": function(t, b, c, d) {
-    return c * ((t = t / d - 1) * t * t + 1) + b;
-  },
-  "ease-in-out": function(t, b, c, d) {
-    if ((t /= d / 2) < 1) return c / 2 * t * t * t + b;
-    return c / 2 * ((t -= 2) * t * t + 2) + b;
-  },
-  bounce: function(t, b, c, d) {
-    if ((t /= d) < 1 / 2.75) {
-      return c * (7.5625 * t * t) + b;
-    } else if (t < 2 / 2.75) {
-      return c * (7.5625 * (t -= 1.5 / 2.75) * t + 0.75) + b;
-    } else if (t < 2.5 / 2.75) {
-      return c * (7.5625 * (t -= 2.25 / 2.75) * t + 0.9375) + b;
+// #style-inject:#style-inject
+function styleInject(css, { insertAt } = {}) {
+  if (!css || typeof document === "undefined") return;
+  const head = document.head || document.getElementsByTagName("head")[0];
+  const style = document.createElement("style");
+  style.type = "text/css";
+  if (insertAt === "top") {
+    if (head.firstChild) {
+      head.insertBefore(style, head.firstChild);
     } else {
-      return c * (7.5625 * (t -= 2.625 / 2.75) * t + 0.984375) + b;
+      head.appendChild(style);
     }
+  } else {
+    head.appendChild(style);
   }
-};
-var slideTo = (el, target, callback) => {
-  const duration = 1e3;
-  let timer1 = null;
-  const stime = Date.now();
-  cancelFrame(timer1);
-  ani();
-  function ani() {
-    const offset = Math.min(duration, Date.now() - stime);
-    const s = tween.ease(offset, 0, 1, duration);
-    const newY = (1 - s) * target;
-    if (offset < duration) {
-      el.style.transform = `translate(0px, ${newY}px)`;
-      timer1 = nextFrame(ani);
-    }
-    if (Date.now() - stime > duration) {
-      console.log("\u56DE\u5F39\u52A8\u753B\u7ED3\u675F");
-      el.style.transform = `translate(0px, 0px)`;
-      cancelFrame(timer1);
-      timer1 = null;
-      callback && callback();
-    }
+  if (style.styleSheet) {
+    style.styleSheet.cssText = css;
+  } else {
+    style.appendChild(document.createTextNode(css));
   }
-};
+}
 
-// src/index.js
-var masDragDistance = 300;
-var timer = null;
-var TQPullToRefresh = class {
-  constructor(onPullStart, onReleasePulling, onPulling, options = {}) {
-    this.state = {
-      x: 0,
-      y: 0,
-      endY: 0,
-      ladderDistance: 0,
-      // 阶梯下降时阶梯的数值
-      lastY: 0,
-      rate: 1,
-      isRunning: false
-    };
-    this.containerRef = null;
-    this.areaRect = null;
-    this.refresherRef = null;
-    this.refresherRect = null;
-    this.onPullStart = onPullStart;
-    this.onReleasePulling = onReleasePulling;
-    this.onPulling = onPulling;
+// src/style.css
+styleInject(".ptr-indicator-wrapper {\n  position: absolute;\n  top: -60px;\n  left: 0;\n  width: 100%;\n  height: 60px;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  z-index: 10;\n  opacity: 0;\n  pointer-events: none;\n}\n.ptr-indicator-circle {\n  width: 40px;\n  height: 40px;\n  border-radius: 50%;\n  background-color: #ffffff;\n  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}\n.ptr-icon {\n  width: 20px;\n  height: 20px;\n  color: #007bff;\n  display: flex;\n}\n@keyframes ptr-spin {\n  0% {\n    transform: rotate(0deg);\n  }\n  100% {\n    transform: rotate(360deg);\n  }\n}\n.ptr-spinning {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  animation: ptr-spin 0.8s linear infinite;\n}\n");
+
+// src/index.ts
+var PullToRefresh = class {
+  options;
+  indicator;
+  icon;
+  startY = 0;
+  currentY = 0;
+  distance = 0;
+  isPulling = false;
+  state = "pending";
+  constructor(options) {
     this.options = {
-      cssPath: "./refresh.css",
-      imagePath: "./refresh.svg",
-      targetElement: document.body,
+      indicatorIcon: void 0,
+      // 占位
+      distanceToRefresh: 60,
+      resistance: 2.5,
+      onPulling: () => {
+      },
+      onStateChange: () => {
+      },
       ...options
     };
-    this.touchStartHandler = this.touchStart.bind(this);
-    this.touchMoveHandler = this.touchMove.bind(this);
-    this.touchEndHandler = this.touchEnd.bind(this);
-    this.initializeDOM();
-    this.attachEventListeners();
+    this.onTouchStart = this.onTouchStart.bind(this);
+    this.onTouchMove = this.onTouchMove.bind(this);
+    this.onTouchEnd = this.onTouchEnd.bind(this);
+    this.init();
   }
-  /**
-   * 初始化 DOM 结构
-   */
-  initializeDOM() {
-    this.loadStyles();
-    this.containerRef = this.createContainer();
-    this.refresherRef = this.createRefresher();
-    this.options.targetElement.appendChild(this.containerRef);
+  init() {
+    const { container } = this.options;
+    container.style.position = "relative";
+    this.setupIndicator();
+    container.addEventListener("touchstart", this.onTouchStart);
+    container.addEventListener("touchmove", this.onTouchMove, { passive: false });
+    container.addEventListener("touchend", this.onTouchEnd);
   }
-  /**
-   * 加载样式文件
-   */
-  loadStyles() {
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    try {
-      link.href = new URL(this.options.cssPath, import.meta.url).href;
-    } catch (err) {
-      link.href = this.options.cssPath;
+  setupIndicator() {
+    const { container } = this.options;
+    this.indicator = document.createElement("div");
+    this.indicator.className = "ptr-indicator-wrapper";
+    const circle = document.createElement("div");
+    circle.className = "ptr-indicator-circle";
+    this.icon = this.getIcon();
+    circle.appendChild(this.icon);
+    this.indicator.appendChild(circle);
+    container.appendChild(this.indicator);
+  }
+  getIcon() {
+    const { indicatorIcon } = this.options;
+    console.log("\u7528\u6237\u4F20\u5165\u7684 indicatorIcon:", indicatorIcon);
+    return indicatorIcon || this.createDefaultIcon();
+  }
+  createDefaultIcon() {
+    const icon = document.createElement("div");
+    icon.className = "ptr-icon";
+    icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-9.21l5.67-1.35"/></svg>`;
+    return icon;
+  }
+  setState(newState) {
+    if (this.state !== newState) {
+      this.state = newState;
+      this.options.onStateChange(newState);
     }
-    document.head.appendChild(link);
   }
-  /**
-   * 创建容器元素
-   */
-  createContainer() {
-    const container = document.createElement("div");
-    container.className = "container";
-    return container;
+  onTouchStart(e) {
+    if (this.state === "refreshing") return;
+    if (this.options.container.scrollTop > 0) return;
+    this.startY = e.touches[0].clientY;
+    this.isPulling = true;
+    this.setState("pending");
+    this.options.content.style.transition = "none";
+    this.indicator.style.transition = "none";
   }
-  /**
-   * 创建刷新器元素
-   */
-  createRefresher() {
-    const refresher = document.createElement("div");
-    refresher.className = "refresher";
-    const img = document.createElement("img");
-    try {
-      img.src = new URL(this.options.imagePath, import.meta.url).href;
-    } catch (err) {
-      img.src = this.options.imagePath;
+  calculateDamping(pullDistance) {
+    return pullDistance / (1 + pullDistance / (window.innerHeight / this.options.resistance));
+  }
+  onTouchMove(e) {
+    if (!this.isPulling) return;
+    this.currentY = e.touches[0].clientY;
+    const deltaY = this.currentY - this.startY;
+    if (deltaY < 0) {
+      this.isPulling = false;
+      return;
     }
-    img.style.cssText = "width: 100%; height: 100%;";
-    img.style.width = "40px";
-    img.style.height = "40px";
-    refresher.appendChild(img);
-    this.containerRef.appendChild(refresher);
-    return refresher;
+    if (e.cancelable) e.preventDefault();
+    this.distance = this.calculateDamping(deltaY);
+    this.setState(this.distance > this.options.distanceToRefresh ? "releasing" : "pulling");
+    const progress = Math.min(this.distance / this.options.distanceToRefresh, 1);
+    this.indicator.style.opacity = progress.toString();
+    this.indicator.style.transform = `translate3d(0, ${this.distance}px, 0)`;
+    this.options.onPulling(this.distance);
   }
-  /**
-   * 绑定事件监听器
-   */
-  attachEventListeners() {
-    this.containerRef.addEventListener("touchstart", this.touchStartHandler);
-    this.containerRef.addEventListener("touchmove", this.touchMoveHandler);
-    this.containerRef.addEventListener("touchend", this.touchEndHandler);
+  onTouchEnd() {
+    if (!this.isPulling) return;
+    this.isPulling = false;
+    const bounceTransition = "transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)";
+    this.indicator.style.transition = bounceTransition;
+    if (this.state === "releasing") {
+      this.setState("refreshing");
+      this.indicator.style.transform = `translate3d(0, ${this.options.distanceToRefresh}px, 0)`;
+      if (this.icon) {
+        this.icon.style.transform = "";
+        this.icon.classList.add("ptr-spinning");
+      }
+      this.options.onRefresh().then(() => this.reset()).catch(() => this.reset());
+    } else {
+      this.reset();
+    }
   }
-  /**
-   * 移除事件监听器
-   */
-  detachEventListeners() {
-    this.containerRef.removeEventListener("touchstart", this.touchStartHandler);
-    this.containerRef.removeEventListener("touchmove", this.touchMoveHandler);
-    this.containerRef.removeEventListener("touchend", this.touchEndHandler);
-  }
-  prepare(touch) {
-    this.refresherRect = this.refresherRef.getBoundingClientRect();
-    this.state.x = this.refresherRect.left;
-    this.state.y = this.refresherRect.top;
-    this.state.lastY = touch.clientY;
-    this.state.isRunning = true;
+  reset() {
+    this.setState("pending");
+    this.distance = 0;
+    this.options.content.style.transition = "transform 0.3s";
+    this.options.content.style.transform = `translate3d(0, 0, 0)`;
+    this.indicator.style.transition = "transform 0.3s, opacity 0.3s";
+    this.indicator.style.transform = `translate3d(0, 0, 0)`;
+    this.indicator.style.opacity = "0";
+    setTimeout(() => {
+      if (this.icon) this.icon.classList.remove("ptr-spinning");
+      this.indicator.style.transition = "none";
+    }, 300);
   }
   destroy() {
-    this.detachEventListeners();
-  }
-  // 记录日志：动画结束的时机
-  rotate(angle) {
-    console.log("\u65CB\u8F6C\u52A8\u753B\u5F00\u59CB");
-    cancelFrame(timer);
-    this.animate(angle);
-  }
-  animate(angle) {
-    this.refresherRef.style.transform = `translate(0px, ${this.state.y}px)  rotate(${angle}deg`;
-    angle = angle === -360 ? 0 : angle - 5;
-    timer = nextFrame(() => {
-      this.animate(angle - 5);
-    });
-  }
-  // 回弹
-  springBack() {
-    console.log("\u65CB\u8F6C\u52A8\u753B\u7ED3\u675F");
-    console.log(`\u6253\u5370\u8981\u7ED3\u675F\u7684\u65CB\u8F6C\u52A8\u753B id: ${timer}`);
-    cancelFrame(timer);
-    this.state.y = 0;
-    const rect = this.refresherRef.getBoundingClientRect();
-    console.log("\u56DE\u5F39\u52A8\u753B\u5F00\u59CB");
-    slideTo(this.refresherRef, rect.top, () => {
-      this.isSpringBack = true;
-      this.state.isRunning = false;
-    });
-    this.state.rate = 1;
-    this.state.lastY = 0;
-  }
-  move(touch) {
-    const dy = touch.clientY - this.state.lastY;
-    this.state.lastY = touch.clientY;
-    this.state.rate = this.getRate(dy, this.state.rate);
-    this.state.y += dy * this.state.rate;
-    if (this.state.y >= masDragDistance) {
-      this.state.y = masDragDistance;
+    const { container } = this.options;
+    container.removeEventListener("touchstart", this.onTouchStart);
+    container.removeEventListener("touchmove", this.onTouchMove);
+    container.removeEventListener("touchend", this.onTouchEnd);
+    if (this.indicator && this.indicator.parentNode) {
+      this.indicator.parentNode.removeChild(this.indicator);
     }
-    if (this.state.y < 0) {
-      this.state.y = 0;
-    }
-    this.dragMove(this.state.y);
-  }
-  // 手势
-  getRate(distance, rate) {
-    this.state.ladderDistance += distance;
-    if (distance > 0) {
-      if (this.state.ladderDistance >= 100) {
-        rate = Math.max(0, rate - 0.1);
-        this.state.ladderDistance = 0;
-      }
-    } else {
-      if (this.state.ladderDistance < -100) {
-        rate = Math.min(1, rate + 0.1);
-        this.state.ladderDistance = 0;
-      }
-    }
-    return rate;
-  }
-  dragMove(translateY) {
-    if (!this.refresherRef)
-      return;
-    const angle = ~~(translateY / masDragDistance * 360) * -1;
-    this.refresherRef.style.transform = `translate(0px, ${translateY}px) rotate(${angle}deg)`;
-    this.onPulling && this.onPulling(translateY);
-  }
-  touchStart(e) {
-    const touch = e.touches[0];
-    this.prepare(touch);
-    this.isSpringBack = false;
-    this.onPullStart && this.onPullStart();
-  }
-  touchEnd(e) {
-    if (this.state.y >= masDragDistance) {
-      console.log("\u89E6\u53D1\u65CB\u8F6C\u52A8\u753B");
-      this.rotate(0);
-      this.onReleaseToRefresh && this.onReleaseToRefresh();
-    } else {
-      console.log("\u89E6\u53D1\u56DE\u5F39\u52A8\u753B");
-      this.springBack();
-    }
-    this.destroy();
-  }
-  touchMove(e) {
-    const touch = e.touches[0];
-    this.move(touch);
   }
 };
 export {
-  TQPullToRefresh as default
+  PullToRefresh
 };
