@@ -1,0 +1,49 @@
+
+<html>
+  <head>
+    <title>模拟下拉刷新</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+
+  <body>
+    <div class="container">   
+    </div>
+    
+    <!--
+      Browsers can't resolve workspace package names directly. We point
+      the import specifier to the built ESM file using an import map.
+      Make sure to run `pnpm -F core build` in the monorepo root first.
+    -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@tqpull-to-refresh/core": "/node_modules/@tqpull-to-refresh/core/dist/index.mjs"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import TQPullToRefresh from '@tqpull-to-refresh/core'
+      function init() {
+        let pullToRefresh = new TQPullToRefresh(
+          () => {
+            console.log('开始拖动')
+          },
+          () => {
+            console.log('结束拖动')
+            setTimeout(() => {
+              pullToRefresh.springBack()
+            }, 5000)
+          },
+          (y) => {
+            console.log(`拖动中，位置：(${y})`)
+          }
+        )
+      }
+
+      window.onload = () => {
+        init()
+      }
+    </script>
+  </body>
+</html>

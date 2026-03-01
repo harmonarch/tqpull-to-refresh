@@ -1,0 +1,17 @@
+{
+  "name": "@tqpull-to-refresh/core",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.js --format cjs,esm --dts",
+    "postbuild": "cp src/refresh.css dist/ && cp src/refresh.svg dist/ || true",
+    "dev": "tsup src/index.js --format cjs,esm --dts --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.13.1"
+}

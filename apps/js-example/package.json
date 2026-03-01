@@ -1,0 +1,19 @@
+{
+  "name": "js-example",
+  "version": "1.0.0",
+  "private": true,
+  "description": "JavaScript example for @tqpull-to-refresh/core",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "@tqpull-to-refresh/core": "workspace:*"
+  },
+  "packageManager": "pnpm@10.13.1"
+}
