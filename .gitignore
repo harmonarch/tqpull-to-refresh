@@ -1,0 +1,7 @@
+# dependencies
+node_modules/
+
+# build outputs
+dist/
+packages/*/dist/
+apps/*/node_modules/
