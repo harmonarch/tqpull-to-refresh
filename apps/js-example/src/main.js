@@ -63,7 +63,7 @@ window.onload = () => {
 const ptr = new PullToRefresh({
   container: container,
   content: content,
-  // indicatorIcon: customIcon,
+  indicatorIcon: customIcon,
   distanceToRefresh: 60,
 
   // ✨ 将自定义 DOM 交给 Core 挂载
@@ -71,7 +71,6 @@ const ptr = new PullToRefresh({
 
   // ✨ 监听状态，我们自己决定界面怎么画
   onLoadMoreStateChange: (state) => {
-    console.log('上拉加载状态:', state);
     if (state === 'idle') {
       customFooter.style.display = 'none'; // 空闲时藏起来
     } else if (state === 'loading') {

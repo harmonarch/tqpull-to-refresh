@@ -82,7 +82,6 @@ export class PullToRefresh {
 
     // ✨ 绑定滚动事件，用于探测上拉触底
     if (this.options.onLoadMore) {
-      console.log('上拉加载功能已启用，正在监听滚动事件...');
       container.addEventListener('scroll', this.onScrollFn);
     }
   }
@@ -117,18 +116,11 @@ export class PullToRefresh {
   }
 
   private handleScroll() {
-    console.log('滚动事件触发，当前 scrollTop:', this.options.container.scrollTop);
     // 只有在 idle (空闲) 状态下才允许触发触底
-    if (!this.options.onLoadMore || this.loadMoreState !== 'idle') {
-      console.log('当前状态不允许触底加载，当前状态:', this.loadMoreState);
-      return;  
-    }
-
-    console.log('滚动事件触发，正在检查是否触底...');
+    if (!this.options.onLoadMore || this.loadMoreState !== 'idle') return;  
 
     const { container, distanceToLoadMore } = this.options;
     if (container.scrollTop + container.clientHeight >= container.scrollHeight - distanceToLoadMore) {
-      console.log('触底了，准备加载更多...');
       this.triggerLoadMore();
     }
   }
@@ -188,8 +180,6 @@ export class PullToRefresh {
 
   private getIcon(): HTMLElement {
     const { indicatorIcon } = this.options;
-
-    console.log('用户传入的 indicatorIcon:', indicatorIcon);
 
     return indicatorIcon || this.createDefaultIcon();
   }

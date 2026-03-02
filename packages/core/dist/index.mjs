@@ -79,7 +79,6 @@ var PullToRefresh = class {
     container.addEventListener("touchmove", this.onTouchMove, { passive: false });
     container.addEventListener("touchend", this.onTouchEnd);
     if (this.options.onLoadMore) {
-      console.log("\u4E0A\u62C9\u52A0\u8F7D\u529F\u80FD\u5DF2\u542F\u7528\uFF0C\u6B63\u5728\u76D1\u542C\u6EDA\u52A8\u4E8B\u4EF6...");
       container.addEventListener("scroll", this.onScrollFn);
     }
   }
@@ -107,15 +106,9 @@ var PullToRefresh = class {
     }
   }
   handleScroll() {
-    console.log("\u6EDA\u52A8\u4E8B\u4EF6\u89E6\u53D1\uFF0C\u5F53\u524D scrollTop:", this.options.container.scrollTop);
-    if (!this.options.onLoadMore || this.loadMoreState !== "idle") {
-      console.log("\u5F53\u524D\u72B6\u6001\u4E0D\u5141\u8BB8\u89E6\u5E95\u52A0\u8F7D\uFF0C\u5F53\u524D\u72B6\u6001:", this.loadMoreState);
-      return;
-    }
-    console.log("\u6EDA\u52A8\u4E8B\u4EF6\u89E6\u53D1\uFF0C\u6B63\u5728\u68C0\u67E5\u662F\u5426\u89E6\u5E95...");
+    if (!this.options.onLoadMore || this.loadMoreState !== "idle") return;
     const { container, distanceToLoadMore } = this.options;
     if (container.scrollTop + container.clientHeight >= container.scrollHeight - distanceToLoadMore) {
-      console.log("\u89E6\u5E95\u4E86\uFF0C\u51C6\u5907\u52A0\u8F7D\u66F4\u591A...");
       this.triggerLoadMore();
     }
   }
@@ -162,7 +155,6 @@ var PullToRefresh = class {
   }
   getIcon() {
     const { indicatorIcon } = this.options;
-    console.log("\u7528\u6237\u4F20\u5165\u7684 indicatorIcon:", indicatorIcon);
     return indicatorIcon || this.createDefaultIcon();
   }
   createDefaultIcon() {
