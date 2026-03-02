@@ -45,3 +45,24 @@
   align-items: center;
   animation: ptr-spin 0.8s linear infinite;
 }
+
+/* 上拉加载更多 - 底部 Footer 区域 */
+.ptr-footer {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #888;
+  font-size: 14px;
+  /* 默认隐藏，由 JS 控制显示 */
+  display: none; 
+}
+
+/* 复用 iOS 菊花图的尺寸，在底部时稍微缩一下大小 */
+.ptr-footer .ptr-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  color: #888;
+}

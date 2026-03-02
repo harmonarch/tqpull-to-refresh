@@ -2,6 +2,8 @@
 import './style.css';
 
 export type PullState = 'pending' | 'pulling' | 'releasing' | 'refreshing';
+// ✨ 新增：上拉加载的状态机类型
+export type LoadMoreState = 'idle' | 'loading' | 'noMore';
 
 export interface PullToRefreshOptions {
   container: HTMLElement;
@@ -12,6 +14,12 @@ export interface PullToRefreshOptions {
   onRefresh: () => Promise<void>;
   onPulling?: (distance: number) => void;
   onStateChange?: (state: PullState) => void; // 新增：状态变更回调
+
+  // ✨ 新增：上拉加载相关配置
+  onLoadMore?: () => Promise<void>;
+  distanceToLoadMore?: number; // 距离底部多少像素触发加载 (默认 50)
+  footer?: HTMLElement; // ✨ 新增：支持传入自定义底部 DOM
+  onLoadMoreStateChange?: (state: LoadMoreState) => void; // ✨ 新增：底部状态变更回调
 }
 
 export class PullToRefresh {
@@ -19,12 +27,25 @@ export class PullToRefresh {
   
   private indicator!: HTMLElement;
   private icon!: HTMLElement;
+  private footer?: HTMLElement; // ✨ 底部的加载状态 DOM
 
   private startY: number = 0;
   private currentY: number = 0;
   private distance: number = 0;
   private isPulling: boolean = false;
   private state: PullState = 'pending';
+
+  // ✨ 上拉加载的状态控制
+  private hasMore: boolean = true;
+  private loadMoreState: LoadMoreState = 'idle'; // ✨ 引入专属状态机
+  private onScrollFn: () => void;
+
+  // 复用上一节的 iOS 菊花图 SVG
+  private iosSpinnerSvg = `<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="currentColor" stroke-width="8" stroke-linecap="round">
+      <line x1="50" y1="15" x2="50" y2="30" opacity="1.0" transform="rotate(0 50 50)"/><line x1="50" y1="15" x2="50" y2="30" opacity="0.9" transform="rotate(30 50 50)"/><line x1="50" y1="15" x2="50" y2="30" opacity="0.8" transform="rotate(60 50 50)"/><line x1="50" y1="15" x2="50" y2="30" opacity="0.7" transform="rotate(90 50 50)"/><line x1="50" y1="15" x2="50" y2="30" opacity="0.6" transform="rotate(120 50 50)"/><line x1="50" y1="15" x2="50" y2="30" opacity="0.5" transform="rotate(150 50 50)"/><line x1="50" y1="15" x2="50" y2="30" opacity="0.4" transform="rotate(180 50 50)"/><line x1="50" y1="15" x2="50" y2="30" opacity="0.3" transform="rotate(210 50 50)"/><line x1="50" y1="15" x2="50" y2="30" opacity="0.2" transform="rotate(240 50 50)"/><line x1="50" y1="15" x2="50" y2="30" opacity="0.15" transform="rotate(270 50 50)"/><line x1="50" y1="15" x2="50" y2="30" opacity="0.1" transform="rotate(300 50 50)"/><line x1="50" y1="15" x2="50" y2="30" opacity="0.05" transform="rotate(330 50 50)"/>
+    </g>
+  </svg>`;
 
   constructor(options: PullToRefreshOptions) {
     this.options = {
@@ -33,12 +54,17 @@ export class PullToRefresh {
       resistance: 2.5,
       onPulling: () => {},
       onStateChange: () => {},
+      onLoadMore: undefined as any,
+      distanceToLoadMore: 50, // 默认距离底部 50px 触发
+      footer: undefined as any,
+      onLoadMoreStateChange: () => {},
       ...options,
     };
 
     this.onTouchStart = this.onTouchStart.bind(this);
     this.onTouchMove = this.onTouchMove.bind(this);
     this.onTouchEnd = this.onTouchEnd.bind(this);
+    this.onScrollFn = this.handleScroll.bind(this);
 
     this.init();
   }
@@ -48,11 +74,100 @@ export class PullToRefresh {
     container.style.position = 'relative';
     
     this.setupIndicator();
+    this.setupFooter(); // ✨ 初始化底部 Footer
 
     container.addEventListener('touchstart', this.onTouchStart);
     container.addEventListener('touchmove', this.onTouchMove, { passive: false });
     container.addEventListener('touchend', this.onTouchEnd);
+
+    // ✨ 绑定滚动事件，用于探测上拉触底
+    if (this.options.onLoadMore) {
+      console.log('上拉加载功能已启用，正在监听滚动事件...');
+      container.addEventListener('scroll', this.onScrollFn);
+    }
   }
+
+  // ===== ✨ 上拉加载核心逻辑开始 =====
+  private setupFooter() {
+    if (!this.options.onLoadMore) return;
+    const { content, footer } = this.options;
+
+    if (footer) {
+      // 使用传入的自定义 footer
+      this.footer = footer;
+      // 如果调用者没有把自定义 DOM 放入内容层，核心库代为挂载
+      if (!this.footer.parentNode) {
+        content.appendChild(this.footer);
+      }
+    } else {
+      // 默认的内部 Footer
+      this.footer = document.createElement('div');
+      this.footer.className = 'ptr-footer';
+      content.appendChild(this.footer);
+    }
+  }
+
+  // ✨ 统一派发底部状态
+  private setLoadMoreState(newState: LoadMoreState) {
+    if (this.loadMoreState !== newState) {
+      this.loadMoreState = newState;
+      this.options.onLoadMoreStateChange(newState);
+      this.updateDefaultFooterUI(); // 尝试更新默认 UI（如果是自定义则内部会被拦截）
+    }
+  }
+
+  private handleScroll() {
+    console.log('滚动事件触发，当前 scrollTop:', this.options.container.scrollTop);
+    // 只有在 idle (空闲) 状态下才允许触发触底
+    if (!this.options.onLoadMore || this.loadMoreState !== 'idle') {
+      console.log('当前状态不允许触底加载，当前状态:', this.loadMoreState);
+      return;  
+    }
+
+    console.log('滚动事件触发，正在检查是否触底...');
+
+    const { container, distanceToLoadMore } = this.options;
+    if (container.scrollTop + container.clientHeight >= container.scrollHeight - distanceToLoadMore) {
+      console.log('触底了，准备加载更多...');
+      this.triggerLoadMore();
+    }
+  }
+
+  private triggerLoadMore() {
+    this.setLoadMoreState('loading');
+
+    this.options.onLoadMore().then(() => {
+      if (this.hasMore) this.setLoadMoreState('idle');
+    }).catch(() => {
+      if (this.hasMore) this.setLoadMoreState('idle');
+    });
+  }
+
+  // ✨ 对外暴露的 API：控制是否还有更多数据
+  public setHasMore(hasMore: boolean) {
+    this.hasMore = hasMore;
+    if (!hasMore) {
+      this.setLoadMoreState('noMore');
+    } else if (this.loadMoreState === 'noMore') {
+      // 比如触发了下拉刷新，重置了 hasMore，我们将状态切回空闲
+      this.setLoadMoreState('idle');
+    }
+  }
+
+  private updateDefaultFooterUI() {
+    if (!this.footer || this.options.footer) return; // 如果是 DIY 模式，核心库坚决不干涉 UI 渲染
+
+    if (this.loadMoreState === 'noMore') {
+      this.footer.innerHTML = '没有更多数据了';
+      this.footer.style.display = 'flex';
+    } else if (this.loadMoreState === 'loading') {
+      this.footer.innerHTML = `<div class="ptr-icon ptr-spinning">${this.iosSpinnerSvg}</div> <span>正在加载...</span>`;
+      this.footer.style.display = 'flex';
+    } else {
+      this.footer.style.display = 'none';
+    }
+  }
+  // ===== ✨ 上拉加载核心逻辑结束 =====
 
   private setupIndicator() {
     const { container } = this.options;
@@ -131,9 +246,9 @@ export class PullToRefresh {
     this.indicator.style.opacity = progress.toString();
     this.indicator.style.transform = `translate3d(0, ${this.distance}px, 0)`;
 
-    // if (this.icon) {
-    //   this.icon.style.transform = `rotate(${this.distance * 4}deg)`;
-    // }
+    if (this.icon) {
+      this.icon.style.transform = `rotate(${this.distance * 4}deg)`;
+    }
     
     this.options.onPulling(this.distance);
   }
@@ -186,6 +301,7 @@ export class PullToRefresh {
     container.removeEventListener('touchstart', this.onTouchStart);
     container.removeEventListener('touchmove', this.onTouchMove);
     container.removeEventListener('touchend', this.onTouchEnd);
+    container.removeEventListener('scroll', this.onScrollFn);
     // 销毁时顺便清理内部生成的 DOM
     if (this.indicator && this.indicator.parentNode) {
       this.indicator.parentNode.removeChild(this.indicator);
