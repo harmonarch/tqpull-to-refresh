@@ -10,26 +10,38 @@ const list = document.getElementById('list');
 const customFooter = document.getElementById('my-custom-footer');
 
 let page = 1; // 用于模拟分页加载
-let itemCount = 0;
+let itemCount = 0;    
 
-const customIcon = document.createElement('div');
-customIcon.innerHTML = `
-<svg class="ios-spinner" viewBox="0 0 100 100" width="30" height="30" xmlns="http://www.w3.org/2000/svg">
-  <g stroke="currentColor" stroke-width="8" stroke-linecap="round">
-    <line x1="50" y1="15" x2="50" y2="30" opacity="1.0" transform="rotate(0 50 50)"/>
-    <line x1="50" y1="15" x2="50" y2="30" opacity="0.9" transform="rotate(30 50 50)"/>
-    <line x1="50" y1="15" x2="50" y2="30" opacity="0.8" transform="rotate(60 50 50)"/>
-    <line x1="50" y1="15" x2="50" y2="30" opacity="0.7" transform="rotate(90 50 50)"/>
-    <line x1="50" y1="15" x2="50" y2="30" opacity="0.6" transform="rotate(120 50 50)"/>
-    <line x1="50" y1="15" x2="50" y2="30" opacity="0.5" transform="rotate(150 50 50)"/>
-    <line x1="50" y1="15" x2="50" y2="30" opacity="0.4" transform="rotate(180 50 50)"/>
-    <line x1="50" y1="15" x2="50" y2="30" opacity="0.3" transform="rotate(210 50 50)"/>
-    <line x1="50" y1="15" x2="50" y2="30" opacity="0.2" transform="rotate(240 50 50)"/>
-    <line x1="50" y1="15" x2="50" y2="30" opacity="0.15" transform="rotate(270 50 50)"/>
-    <line x1="50" y1="15" x2="50" y2="30" opacity="0.1" transform="rotate(300 50 50)"/>
-    <line x1="50" y1="15" x2="50" y2="30" opacity="0.05" transform="rotate(330 50 50)"/>
-  </g>
-</svg>`
+const customIndicator = document.createElement('div');
+customIndicator.className = 'ptr-indicator-wrapper';
+
+const circle = document.createElement('div');
+circle.className = 'ptr-indicator-circle';
+
+const icon = document.createElement('div');
+icon.className = 'ptr-indicator-icon';
+icon.innerHTML = `
+  <svg class="ios-spinner" viewBox="0 0 100 100" width="30" height="30" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="currentColor" stroke-width="8" stroke-linecap="round">
+      <line x1="50" y1="15" x2="50" y2="30" opacity="1.0" transform="rotate(0 50 50)"/>
+      <line x1="50" y1="15" x2="50" y2="30" opacity="0.9" transform="rotate(30 50 50)"/>
+      <line x1="50" y1="15" x2="50" y2="30" opacity="0.8" transform="rotate(60 50 50)"/>
+      <line x1="50" y1="15" x2="50" y2="30" opacity="0.7" transform="rotate(90 50 50)"/>
+      <line x1="50" y1="15" x2="50" y2="30" opacity="0.6" transform="rotate(120 50 50)"/>
+      <line x1="50" y1="15" x2="50" y2="30" opacity="0.5" transform="rotate(150 50 50)"/>
+      <line x1="50" y1="15" x2="50" y2="30" opacity="0.4" transform="rotate(180 50 50)"/>
+      <line x1="50" y1="15" x2="50" y2="30" opacity="0.3" transform="rotate(210 50 50)"/>
+      <line x1="50" y1="15" x2="50" y2="30" opacity="0.2" transform="rotate(240 50 50)"/>
+      <line x1="50" y1="15" x2="50" y2="30" opacity="0.15" transform="rotate(270 50 50)"/>
+      <line x1="50" y1="15" x2="50" y2="30" opacity="0.1" transform="rotate(300 50 50)"/>
+      <line x1="50" y1="15" x2="50" y2="30" opacity="0.05" transform="rotate(330 50 50)"/>
+    </g>
+  </svg>
+`
+
+circle.appendChild(icon);
+customIndicator.appendChild(circle);
+container.appendChild(customIndicator);
 
 function initList () {
   // 清空列表
@@ -63,7 +75,7 @@ window.onload = () => {
 const ptr = new PullToRefresh({
   container: container,
   content: content,
-  indicatorIcon: customIcon,
+  indicator: customIndicator, // 传入自定义的 indicator DOM
   distanceToRefresh: 60,
 
   // ✨ 将自定义 DOM 交给 Core 挂载
@@ -87,19 +99,21 @@ const ptr = new PullToRefresh({
   onPulldownProgress: (state) => {
     switch (state) {
       case 'pending':
+         console.log('等待下拉...');
+         break;
       case 'pulling':
-        // customIcon.textContent = '👀';
-        // customIcon.classList.remove('icon-loading');
-        // customText.textContent = '下拉寻找惊喜...';
+        console.log('正在下拉，但距离不足以触发刷新');
         break;
       case 'releasing':
-        // customIcon.textContent = '🚀';
-        // customText.textContent = '松开准备起飞...';
+        console.log('下拉距离已足，松开即可刷新');        
         break;
-      case 'refreshing':
-        // customIcon.textContent = '💖';
-        // customIcon.classList.add('icon-loading'); // 增加心跳动画
-        // customText.textContent = '拼命为你加载中...';
+      case 'refreshing':      
+        console.log('正在刷新...'); 
+        icon.classList.add('ptr-spinning');
+        break;
+      case 'refreshend':
+        console.log('刷新结束，重置状态');
+        icon.classList.remove('ptr-spinning');
         break;
     }
   },

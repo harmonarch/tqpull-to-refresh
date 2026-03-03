@@ -1,14 +1,15 @@
 // packages/core/src/index.ts
 import './style.css';
 
-export type PullState = 'pending' | 'pulling' | 'releasing' | 'refreshing';
+export type PullState = 'pending' | 'pulling' | 'releasing' | 'refreshing' | 'refreshend';
 // ✨ 新增：上拉加载的状态机类型
 export type LoadMoreState = 'idle' | 'loading' | 'noMore';
 
 export interface PullToRefreshOptions {
   container: HTMLElement;
   content: HTMLElement;
-  indicatorIcon?: HTMLElement; // 支持传入自定义的ICON DOM 节点
+  indicator?: HTMLElement; // 自定义的 indicator 配置项
+  // indicatorIcon?: HTMLElement; // 支持传入自定义的ICON DOM 节点
   distanceToRefresh?: number;
   resistance?: number;
   onRefresh: () => Promise<void>;
@@ -49,7 +50,7 @@ export class PullToRefresh {
 
   constructor(options: PullToRefreshOptions) {
     this.options = {
-      indicatorIcon: undefined as any, // 占位
+      indicator: undefined as any, // 占位
       distanceToRefresh: 60,
       resistance: 2.5,
       onPulling: () => {},
@@ -162,9 +163,19 @@ export class PullToRefresh {
   // ===== ✨ 上拉加载核心逻辑结束 =====
 
   private setupIndicator() {
-    const { container } = this.options;
+    const { container, indicator } = this.options;
 
-    // 2. 生成默认的 Material 风格 Indicator
+    if (indicator) {
+      // 使用传入的自定义 indicator
+      this.indicator = indicator;
+      // 如果调用者没有把自定义 DOM 放入容器，核心库代为挂载
+      if (!this.indicator.parentNode) {
+        container.appendChild(this.indicator);
+      }
+      return;
+    }
+
+    // 生成默认的 Material 风格 Indicator
     this.indicator = document.createElement('div');
     this.indicator.className = 'ptr-indicator-wrapper';
     
@@ -270,7 +281,7 @@ export class PullToRefresh {
   }
 
   private reset() {
-    this.setState('pending');
+    this.setState('refreshend');
     this.distance = 0;
     
     this.options.content.style.transition = 'transform 0.3s';
