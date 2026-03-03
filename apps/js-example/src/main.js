@@ -70,7 +70,7 @@ const ptr = new PullToRefresh({
   footer: customFooter,
 
   // ✨ 监听状态，我们自己决定界面怎么画
-  onLoadMoreStateChange: (state) => {
+  onLoadMoreProgress: (state) => {
     if (state === 'idle') {
       customFooter.style.display = 'none'; // 空闲时藏起来
     } else if (state === 'loading') {
@@ -84,7 +84,7 @@ const ptr = new PullToRefresh({
   },
   
   // ★ 核心库运算完状态后抛出，由我们自己控制 UI 变化
-  onStateChange: (state) => {
+  onPulldownProgress: (state) => {
     switch (state) {
       case 'pending':
       case 'pulling':

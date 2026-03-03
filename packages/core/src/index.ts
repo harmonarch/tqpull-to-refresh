@@ -13,13 +13,13 @@ export interface PullToRefreshOptions {
   resistance?: number;
   onRefresh: () => Promise<void>;
   onPulling?: (distance: number) => void;
-  onStateChange?: (state: PullState) => void; // 新增：状态变更回调
+  onPulldownProgress?: (state: PullState) => void; // 新增：状态变更回调
 
   // ✨ 新增：上拉加载相关配置
   onLoadMore?: () => Promise<void>;
   distanceToLoadMore?: number; // 距离底部多少像素触发加载 (默认 50)
   footer?: HTMLElement; // ✨ 新增：支持传入自定义底部 DOM
-  onLoadMoreStateChange?: (state: LoadMoreState) => void; // ✨ 新增：底部状态变更回调
+  onLoadMoreProgress?: (state: LoadMoreState) => void; // ✨ 新增：底部状态变更回调
 }
 
 export class PullToRefresh {
@@ -53,11 +53,11 @@ export class PullToRefresh {
       distanceToRefresh: 60,
       resistance: 2.5,
       onPulling: () => {},
-      onStateChange: () => {},
+      onPulldownProgress: () => {},
       onLoadMore: undefined as any,
       distanceToLoadMore: 50, // 默认距离底部 50px 触发
       footer: undefined as any,
-      onLoadMoreStateChange: () => {},
+      onLoadMoreProgress: () => {},
       ...options,
     };
 
@@ -110,7 +110,7 @@ export class PullToRefresh {
   private setLoadMoreState(newState: LoadMoreState) {
     if (this.loadMoreState !== newState) {
       this.loadMoreState = newState;
-      this.options.onLoadMoreStateChange(newState);
+      this.options.onLoadMoreProgress(newState);
       this.updateDefaultFooterUI(); // 尝试更新默认 UI（如果是自定义则内部会被拦截）
     }
   }
@@ -194,7 +194,7 @@ export class PullToRefresh {
   private setState(newState: PullState) {
     if (this.state !== newState) {
       this.state = newState;
-      this.options.onStateChange(newState);
+      this.options.onPulldownProgress(newState);
     }
   }
 
