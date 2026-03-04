@@ -1,0 +1,9 @@
+.app {
+  font-family: sans-serif;
+  padding: 2rem;
+}
+
+.pulldown {
+  border: 1px dashed #ccc;
+  padding: 1rem;
+}

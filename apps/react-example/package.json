@@ -1,0 +1,22 @@
+{
+  "name": "react-example",
+  "version": "1.0.0",
+  "private": true,
+  "description": "React 19 example for @tqpull-to-refresh/react",
+  "main": "src/main.jsx",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@tqpull-to-refresh/react": "workspace:*",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "@vitejs/plugin-react": "^5.0.0"
+  },
+  "packageManager": "pnpm@10.13.1"
+}
