@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "description": "React 19 example for @tqpull-to-refresh/react",
-  "main": "src/main.jsx",
+  "main": "src/main.tsx",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@tqpull-to-refresh/react": "workspace:*",
@@ -15,6 +16,9 @@
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.3.0",
     "vite": "^5.0.0",
     "@vitejs/plugin-react": "^5.0.0"
   },

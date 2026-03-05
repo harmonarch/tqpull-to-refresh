@@ -9,7 +9,6 @@ export interface PullToRefreshOptions {
   container: HTMLElement;
   content: HTMLElement;
   indicator?: HTMLElement; // 自定义的 indicator 配置项
-  // indicatorIcon?: HTMLElement; // 支持传入自定义的ICON DOM 节点
   distanceToRefresh?: number;
   resistance?: number;
   onRefresh: () => Promise<void>;
@@ -182,17 +181,11 @@ export class PullToRefresh {
     const circle = document.createElement('div');
     circle.className = 'ptr-indicator-circle';
 
-    this.icon = this.getIcon();
+    this.icon = this.createDefaultIcon();
     
     circle.appendChild(this.icon);
     this.indicator.appendChild(circle);
     container.appendChild(this.indicator);
-  }
-
-  private getIcon(): HTMLElement {
-    const { indicatorIcon } = this.options;
-
-    return indicatorIcon || this.createDefaultIcon();
   }
 
   createDefaultIcon(): HTMLElement {

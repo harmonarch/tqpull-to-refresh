@@ -10,8 +10,13 @@
       "import": "./dist/index.mjs",
       "types": "./dist/index.d.ts",
       "require": "./dist/index.js"
-    }
+    },
+    "./style.css": "./src/style.css"
   },
+  "files": [
+    "dist",
+    "src/style.css"
+  ],
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --inject-style",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch --inject-style"

@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "outDir": "./dist",
+    "jsx": "react-jsx",          // 关键配置：支持 React 17+ 的新 JSX 转换
+    "esModuleInterop": true
+  },
+  "include": ["src"]
+}

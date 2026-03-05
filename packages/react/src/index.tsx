@@ -132,3 +132,5 @@ export const PullToRefresh = forwardRef<PullToRefreshInstance, PullToRefreshProp
 });
 
 PullToRefresh.displayName = 'PullToRefresh';
+
+export type { PullState, LoadMoreState };

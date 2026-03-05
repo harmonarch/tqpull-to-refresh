@@ -2,11 +2,12 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import type { UserConfig } from 'vite'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const workspaceRoot = path.resolve(__dirname, '../../')
 
-export default defineConfig({
+const config: UserConfig = defineConfig({
   plugins: [react()],
   root: path.resolve(__dirname, 'src'),
   resolve: {
@@ -26,3 +27,5 @@ export default defineConfig({
     }
   }
 })
+
+export default config
