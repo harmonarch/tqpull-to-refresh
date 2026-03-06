@@ -72,8 +72,6 @@ export const PullToRefresh = forwardRef<PullToRefreshInstance, PullToRefreshProp
   useEffect(() => {
     if (!containerRef.current || !contentRef.current) return;
 
-    console.log(indicator);
-
     ptrInstance.current = new CorePTR({
       container: containerRef.current,
       content: contentRef.current,

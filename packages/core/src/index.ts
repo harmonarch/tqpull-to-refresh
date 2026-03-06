@@ -164,10 +164,8 @@ export class PullToRefresh {
   private setupIndicator() {
     const { container, indicator } = this.options;
 
-    console.log('indicator in options:', indicator);
     if (indicator) {
       // 使用传入的自定义 indicator
-      console.log('Using custom indicator:', indicator);
       this.indicator = indicator;
       // 如果调用者没有把自定义 DOM 放入容器，核心库代为挂载
       if (!this.indicator.parentNode) {
@@ -238,8 +236,6 @@ export class PullToRefresh {
     this.setState(this.distance > this.options.distanceToRefresh ? 'releasing' : 'pulling');
 
     const progress = Math.min(this.distance / this.options.distanceToRefresh, 1);
-
-    console.log(progress.toString())
 
     // Core 统一接管透明度和整体下降的位移
     this.indicator.style.opacity = progress.toString();

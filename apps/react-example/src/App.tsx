@@ -37,7 +37,7 @@ export default function App() {
 
   // ---------------- 核心回调函数 ----------------
   const onRefresh = async () => {
-    await new Promise(resolve => setTimeout(resolve, 150000));
+    await new Promise(resolve => setTimeout(resolve, 1500));
     initList();
     createNewItem();
     ptrRef.current?.setHasMore(true);
@@ -75,6 +75,17 @@ export default function App() {
           </svg>
         </div>
       </div>
+    </div>
+  );
+
+  const CustomFooter = () => (
+    <div className="diy-footer" style={{ display: loadMoreState === 'idle' ? 'none' : 'block' }}>
+      {loadMoreState === 'loading' && (
+        <span><span className="diy-loading-icon">🔥</span> 拼命燃烧卡路里加载中...</span>
+      )}
+      {loadMoreState === 'noMore' && (
+        <span style={{ color: '#ccc' }}>🛑 到底啦，一滴都不剩了！</span>
+      )}
     </div>
   );
 
@@ -126,17 +137,7 @@ export default function App() {
         onPulldownProgress={onPulldownProgress}
         onLoadMoreProgress={onLoadMoreProgress}
         indicator={<CustomIndicator />}
-        footer={
-          // 彻底放弃操作 DOM，完全用 React 声明式渲染底部 Footer
-          <div className="diy-footer" style={{ display: loadMoreState === 'idle' ? 'none' : 'block' }}>
-            {loadMoreState === 'loading' && (
-              <span><span className="diy-loading-icon">🔥</span> 拼命燃烧卡路里加载中...</span>
-            )}
-            {loadMoreState === 'noMore' && (
-              <span style={{ color: '#ccc' }}>🛑 到底啦，一滴都不剩了！</span>
-            )}
-          </div>
-        }
+        footer={<CustomFooter />}
       >       
         <ul style={{ minHeight: '100%', backgroundColor: '#fff' }}>
           {list.map((item) => (
