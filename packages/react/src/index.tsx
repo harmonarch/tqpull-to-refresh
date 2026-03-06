@@ -125,7 +125,6 @@ export const PullToRefresh = forwardRef<PullToRefreshInstance, PullToRefreshProp
             left: 0, 
             width: '100%', 
             zIndex: 10,
-            // 注意：这里绝对不能写 opacity: 0，交由 Core 自动控制！
           }}
         >
           {indicator}
