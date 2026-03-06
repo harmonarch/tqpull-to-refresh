@@ -1,0 +1,117 @@
+/* =========================================
+   1. 全局与基础业务样式
+   ========================================= */
+* { box-sizing: border-box; }
+body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; background-color: #f7f8fa; }
+
+#app { display: flex; flex-direction: column; height: 100vh; }
+.app-header { background-color: #212529; color: white; text-align: center; padding: 16px; font-size: 18px; font-weight: bold; z-index: 10; }
+
+ul { list-style: none; padding: 0; margin: 0; }
+li { padding: 20px 16px; border-bottom: 1px solid #eee; color: #333; font-size: 16px; }
+
+/* =========================================
+   2. React 组件骨架类 (刚才新增的 Class)
+   ========================================= */
+/* 容器：铺满剩余空间，处理原生滚动 */
+.ptr-react-container {
+  flex: 1;
+  /* 注意：核心的 position: relative 和 overflow 已经在 React 内联样式中保证了绝对安全 */
+}
+
+/* 顶部幽灵锚点：专门接收 Core 引擎的位移计算 */
+.ptr-react-indicator-anchor {
+  /* 必须穿透点击事件，防止它在透明状态下阻挡了列表的点击 */
+  pointer-events: none; 
+}
+
+/* 滚动内容区域 */
+.ptr-react-content {
+  /* 预留给外部扩展，目前核心样式依赖 React 内联 */
+}
+
+/* 底部幽灵锚点 */
+.ptr-react-footer-anchor {
+  width: 100%;
+}
+
+.ptr-indicator-wrapper {
+  position: absolute;
+  top: -60px; 
+  left: 0;
+  width: 100%;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000; 
+}
+
+/* 白色的圆形背景兜底 */
+.ptr-indicator-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ptr-indicator-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* =========================================
+   4. iOS 风格菊花图与动画
+   ========================================= */
+.ios-spinner {
+  color: #8e8e93; /* 经典的 iOS 灰色 */
+}
+
+/* 刷新时的核心动画：12步跳跃旋转 */
+.ios-spinning {
+  animation: ios-spin 0.8s steps(12, end) infinite;
+}
+
+@keyframes ios-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 通用旋转辅助类 */
+.ptr-spinning {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: ptr-spin 0.8s linear infinite;
+}
+
+@keyframes ptr-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.diy-footer {
+  text-align: center;
+  padding: 15px;
+  font-size: 14px;
+  color: #ff5722; /* 醒目的橙红色 */
+  font-weight: bold;
+  /* 默认隐藏的逻辑现在由 React State 声明式控制，这里不需要写 display: none 了 */
+}
+
+.diy-loading-icon {
+  display: inline-block;
+  animation: heartbeat 0.6s infinite;
+  margin-right: 5px;
+}
+
+@keyframes heartbeat {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}

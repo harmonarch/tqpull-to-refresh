@@ -1,5 +1,4 @@
 import './style.css'; 
-// import '@my-ptr/core/style.css'; 
 import { PullToRefresh } from '@tqpull-to-refresh/core';
 
 const container = document.getElementById('ptr-container');

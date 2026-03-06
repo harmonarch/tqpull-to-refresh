@@ -1,9 +1,10 @@
 // packages/react/src/index.tsx
 
-import React, { useEffect, useRef, useImperativeHandle, forwardRef, ReactNode } from 'react';
+import React, { useEffect, useRef, useImperativeHandle, forwardRef, ReactNode, ReactElement } from 'react';
 // 直接复用 Core 包的类型和核心类
 import { PullToRefresh as CorePTR, PullState, LoadMoreState } from '@tqpull-to-refresh/core';
-import '@tqpull-to-refresh/core/style.css';
+// import '@tqpull-to-refresh/core/style.css';
+import './style.css';
 
 // 1. 定义组件的 Props，完美继承 Core 的配置，并将 DOM 替换为 ReactNode
 export interface PullToRefreshProps {
@@ -15,7 +16,9 @@ export interface PullToRefreshProps {
   resistance?: number;
   
   // 支持传入 React 组件作为自定义视图
-  indicator?: ReactNode;
+  indicator?: ReactElement<{
+    ref?: React.Ref<HTMLElement>;
+  }>;
   footer?: ReactNode;
   
   onPulldownProgress?: (state: PullState) => void;
@@ -37,14 +40,14 @@ export const PullToRefresh = forwardRef<PullToRefreshInstance, PullToRefreshProp
     children,
     onRefresh,
     onLoadMore,
-    distanceToRefresh,
-    distanceToLoadMore,
-    resistance,
+    distanceToRefresh = 60,
+    distanceToLoadMore = 50,
+    resistance = 2.5,
     indicator,
     footer,
     onPulldownProgress,
     onLoadMoreProgress,
-    onPulling,
+    onPulling = () => {},
     className,
     style
   } = props;
@@ -52,8 +55,8 @@ export const PullToRefresh = forwardRef<PullToRefreshInstance, PullToRefreshProp
   // 获取真实 DOM 的引用，交给 Core 去控制
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const indicatorRef = useRef<HTMLDivElement>(null);
-  const footerRef = useRef<HTMLDivElement>(null);
+  const indicatorAnchorRef = useRef<HTMLDivElement>(null);
+  const footerAnchorRef = useRef<HTMLDivElement>(null);
   
   // 保存 Core 实例
   const ptrInstance = useRef<CorePTR | null>(null);
@@ -69,12 +72,14 @@ export const PullToRefresh = forwardRef<PullToRefreshInstance, PullToRefreshProp
   useEffect(() => {
     if (!containerRef.current || !contentRef.current) return;
 
+    console.log(indicator);
+
     ptrInstance.current = new CorePTR({
       container: containerRef.current,
       content: contentRef.current,
-      // 如果用户传了 React 节点，就把它的外壳 DOM 传给 Core；否则传 undefined 让 Core 生成默认的
-      indicator: indicator ? indicatorRef.current! : undefined,
-      footer: footer ? footerRef.current! : undefined,
+      // 只要用户传了 indicator，我们就把“幽灵锚点”交给 Core 去操纵位移和透明度
+      indicator: indicator ? indicatorAnchorRef.current! : undefined,
+      footer: footer ? footerAnchorRef.current! : undefined,
       
       onRefresh,
       onLoadMore,
@@ -97,32 +102,50 @@ export const PullToRefresh = forwardRef<PullToRefreshInstance, PullToRefreshProp
   return (
     <div
       ref={containerRef}
-      className={className}
-      style={{ 
-        height: '100%', 
+      className={`ptr-react-container ${className || ''}`}
+      style={{
+        flex: 1,
+        // height: '100%', 
         overflowY: 'auto', 
         WebkitOverflowScrolling: 'touch', // iOS 顺滑滚动 
         position: 'relative', // 必须为 relative，作为 indicator 的参考系
         ...style 
       }}
     >
-      {/* 只有在用户传入了自定义 indicator 时，才渲染这个占位壳 */}
+
+      {/* ✨ 幽灵锚点 (Ghost Anchor)
+        Core 库只会改变这个 div 的 opacity 和 transform (向下的 Y 轴位移)。
+        使用者传入的 indicator 只需要在里面写 top: -60px 藏在上面即可。
+      */}
       {indicator && (
-        <div ref={indicatorRef}>
+        <div 
+          ref={indicatorAnchorRef} 
+          className="ptr-react-indicator-anchor"
+          style={{ 
+            position: 'absolute', 
+            top: 0, 
+            left: 0, 
+            width: '100%', 
+            zIndex: 10,
+            // 注意：这里绝对不能写 opacity: 0，交由 Core 自动控制！
+          }}
+        >
           {indicator}
         </div>
       )}
 
+
       {/* 滚动的内容区 */}
       <div 
         ref={contentRef} 
-        style={{ minHeight: '100%', backgroundColor: '#fff', position: 'relative', zIndex: 2 }}
+        className="ptr-react-content"
+        style={{ minHeight: '100%', backgroundColor: '#fff', zIndex: 2 }}
       >
         {children}
         
-        {/* 自定义 footer 的占位壳 */}
+        {/* Footer 锚点 */}
         {footer && (
-          <div ref={footerRef}>
+          <div ref={footerAnchorRef} className="ptr-react-footer-anchor">
             {footer}
           </div>
         )}
