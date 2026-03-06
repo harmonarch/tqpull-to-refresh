@@ -6,7 +6,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const workspaceRoot = path.resolve(__dirname, '../../')
 
 export default defineConfig({
-  root: path.resolve(__dirname, 'src'),
+  base: '/js-example/',
   resolve: {
     alias: {
       '@tqpull-to-refresh/core': path.resolve(workspaceRoot, 'packages/core/dist/index.mjs')
@@ -20,5 +20,10 @@ export default defineConfig({
       // turning off strict allows accessing files outside project root when needed
       strict: false
     }
+  },
+  // 显式告诉 Vite：打包产物放到 dist 文件夹里！
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true
   }
 })

@@ -1,0 +1,31 @@
+
+
+> @tqpull-to-refresh-monorepo/apps-docs@0.0.0 build /Users/rhazen/Downloads/Workspace/tqpull-to-refresh-monorepo/apps/docs
+> vitepress build
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J
+  [32m[1mvitepress[22m v1.6.4[39m
+
+[?25l[1G[1G⠋ building client + server bundles...[1G[0K⠙ building client + server bundles...[1G[0K⠹ building client + server bundles...[1G[0K⠸ building client + server bundles...[1G[0K⠼ building client + server bundles...[2K[1G[1G[0K⠴ building client + server bundles...[1G[0K⠦ building client + server bundles...[1G[0K⠧ building client + server bundles...[2K[1G[1G[0K⠇ building client + server bundles...[1G[0K[?25h[32m✓[0m building client + server bundles...
+[?25l[1G[1G⠋ rendering pages...[1G[0K[?25h[32m✓[0m rendering pages...
+build complete in 1.06s.
+[?25h

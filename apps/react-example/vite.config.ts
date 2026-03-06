@@ -8,8 +8,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const workspaceRoot = path.resolve(__dirname, '../../')
 
 const config: UserConfig = defineConfig({
+  base: '/react-example/',
   plugins: [react()],
-  root: path.resolve(__dirname, 'src'),
   resolve: {
     alias: {
       // allow imports from the built workspace package if needed
@@ -25,6 +25,11 @@ const config: UserConfig = defineConfig({
       allow: [workspaceRoot],
       strict: false
     }
+  },
+  // 显式告诉 Vite：打包产物放到 dist 文件夹里！
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true
   }
 })
 

@@ -1,0 +1,18 @@
+/* apps/docs/.vitepress/theme/custom.css */
+/* 模拟手机外观的 iframe 容器 */
+.phone-simulator {
+  width: 375px;
+  height: 667px;
+  border: 14px solid #333;
+  border-radius: 36px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  margin: 20px auto;
+  position: relative;
+  background: #fff;
+}
+.phone-simulator iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}

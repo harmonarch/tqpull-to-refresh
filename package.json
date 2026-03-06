@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "turbo run dev",
-    "build": "turbo run build"
+    "build": "turbo run build",
+    "build:site": "turbo run build && mkdir -p dist-site && cp -R apps/docs/.vitepress/dist/* dist-site/ && cp -R apps/js-example/dist dist-site/js-example && cp -R apps/react-example/dist dist-site/react-example"
   },
   "keywords": [],
   "author": "",

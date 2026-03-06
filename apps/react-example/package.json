@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "React 19 example for @tqpull-to-refresh/react",
-  "main": "src/main.tsx",
+  "main": "main.tsx",
   "type": "module",
   "scripts": {
     "dev": "vite",
