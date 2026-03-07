@@ -1,18 +1,45 @@
 /* apps/docs/.vitepress/theme/custom.css */
-/* 模拟手机外观的 iframe 容器 */
+
+/* 模拟现代全面屏手机外观 (9:18 比例) */
 .phone-simulator {
-  width: 375px;
-  height: 667px;
+  width: 360px; /* 设定一个合适的手机物理宽度基准 */
+  aspect-ratio: 9 / 18; /* ✨ 核心魔法：严格锁定 9:18 的宽高比 */
+  
   border: 14px solid #333;
   border-radius: 36px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  margin: 20px auto;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15); /* 加深一点阴影，让设备更有立体感 */
+  margin: 30px auto;
   position: relative;
   background: #fff;
+  
+  /* 增加一个小刘海/灵动岛的装饰（可选，让它看起来更像真机） */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 24px;
+    background-color: #333;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    z-index: 100;
+  }
 }
+
 .phone-simulator iframe {
   width: 100%;
   height: 100%;
   border: none;
+  display: block; /* 消除 iframe 底部的幽灵空白 */
+  padding-top: 24px; /* ✨ 给顶部的刘海留出一点空间，防止挡住下拉刷新的文字 */
+}
+
+/* 适配小屏幕显示器：如果屏幕不够高，自动等比缩小 */
+@media (max-height: 900px) {
+  .phone-simulator {
+    width: 320px; 
+  }
 }

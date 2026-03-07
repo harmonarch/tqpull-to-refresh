@@ -8,4 +8,4 @@
 [2K[1Grendering chunks (1)...[2K[1G[2K[1Gcomputing gzip size (0)...[2K[1Gcomputing gzip size (1)...[2K[1Gcomputing gzip size (2)...[2K[1Gcomputing gzip size (3)...[2K[1G[2mdist/[22m[32mindex.html                 [39m[1m[2m 0.68 kB[22m[1m[22m[2m │ gzip: 0.43 kB[22m
 [2mdist/[22m[2massets/[22m[35mindex-BAhG5Van.css  [39m[1m[2m 1.50 kB[22m[1m[22m[2m │ gzip: 0.66 kB[22m
 [2mdist/[22m[2massets/[22m[36mindex-GqrxrKfJ.js   [39m[1m[2m11.66 kB[22m[1m[22m[2m │ gzip: 3.57 kB[22m
-[32m✓ built in 59ms[39m
+[32m✓ built in 62ms[39m
