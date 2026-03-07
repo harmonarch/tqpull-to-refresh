@@ -80,6 +80,12 @@ export class PullToRefresh {
     container.addEventListener('touchmove', this.onTouchMove, { passive: false });
     container.addEventListener('touchend', this.onTouchEnd);
 
+    // ✨ 新增：PC 端 Mouse 事件
+    container.addEventListener('mousedown', this.onTouchStart);
+    // 鼠标移动和松开最好绑定在 window 上，防止拖拽过快鼠标移出 container 导致事件丢失
+    window.addEventListener('mousemove', this.onTouchMove, { passive: false });
+    window.addEventListener('mouseup', this.onTouchEnd);
+
     // ✨ 绑定滚动事件，用于探测上拉触底
     if (this.options.onLoadMore) {
       container.addEventListener('scroll', this.onScrollFn);
@@ -202,11 +208,22 @@ export class PullToRefresh {
     }
   }
 
+  // 提取一个辅助方法，用来获取准确的 Y 坐标
+  private getClientY(e: TouchEvent | MouseEvent): number {
+    if ('touches' in e) {
+      // 移动端
+      return e.touches[0].clientY;
+    } else {
+      // PC 端鼠标
+      return e.clientY;
+    }
+  }
+
   private onTouchStart(e: TouchEvent) {
     if (this.state === 'refreshing') return;
     if (this.options.container.scrollTop > 0) return;
 
-    this.startY = e.touches[0].clientY;
+    this.startY = this.getClientY(e); // ✨ 使用辅助方法
     this.isPulling = true;
     this.setState('pending');
     
@@ -221,7 +238,7 @@ export class PullToRefresh {
   private onTouchMove(e: TouchEvent) {
     if (!this.isPulling) return;
 
-    this.currentY = e.touches[0].clientY;
+    this.currentY = this.getClientY(e); // ✨ 使用辅助方法
     const deltaY = this.currentY - this.startY;
 
     if (deltaY < 0) {
@@ -297,6 +314,12 @@ export class PullToRefresh {
     container.removeEventListener('touchmove', this.onTouchMove);
     container.removeEventListener('touchend', this.onTouchEnd);
     container.removeEventListener('scroll', this.onScrollFn);
+
+    // ✨ 清理鼠标事件
+    container.removeEventListener('mousedown', this.onTouchStart);
+    window.removeEventListener('mousemove', this.onTouchMove);
+    window.removeEventListener('mouseup', this.onTouchEnd);
+
     // 销毁时顺便清理内部生成的 DOM
     if (this.indicator && this.indicator.parentNode) {
       this.indicator.parentNode.removeChild(this.indicator);
