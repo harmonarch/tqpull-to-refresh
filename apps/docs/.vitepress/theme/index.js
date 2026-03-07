@@ -1,6 +1,6 @@
 // apps/docs/.vitepress/theme/index.js
 import DefaultTheme from 'vitepress/theme'
-import './custom.css'
+import './custom.css' // 引入自定义样式
 
 export default {
   extends: DefaultTheme, // 继承默认主题的所有 UI
