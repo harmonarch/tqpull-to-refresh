@@ -1,7 +1,25 @@
+/* 全局与基础业务样式 */
 * { box-sizing: border-box; }
-body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; background-color: #f7f8fa; }
+body, html { 
+  margin: 0; 
+  padding: 0; 
+  height: 100%; 
+  font-family: sans-serif; 
+  background-color: #f7f8fa; 
+  
+  /* ✨ 核心修复：彻底禁用系统默认的文字选中和拖拽 */
+  -webkit-user-select: none; 
+  user-select: none; 
+  -webkit-user-drag: none;
+}
 
-#app { display: flex; flex-direction: column; height: 100vh; user-select: none; }
+/* 为了保证正常的输入框（如果以后有的话）还能用，可以单独放开 */
+input, textarea {
+  -webkit-user-select: auto;
+  user-select: auto;
+}
+
+#app { display: flex; flex-direction: column; height: 100vh; }
 .app-header { background-color: #212529; color: white; text-align: center; padding: 16px; font-size: 18px; font-weight: bold; z-index: 10; }
 
 #ptr-container { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
